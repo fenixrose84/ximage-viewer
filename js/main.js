@@ -93,7 +93,7 @@ async function displayImage(direction = 0, shouldStopAnimation = true) {
 
   let fileIndex = 0;
   if (direction) {
-    fileIndex = wrap(currentFile + direction, 0, currentFiles.length - 1);
+    fileIndex = cycle(currentFile + direction, 0, currentFiles.length - 1);
   }
 
   currentFile = fileIndex;
@@ -105,7 +105,7 @@ async function displayImage(direction = 0, shouldStopAnimation = true) {
   isImageDisplayed = true;
   fitImage();
   document.querySelector(".bg-image").style.backgroundImage = `url("${URL.createObjectURL(file)}")`;
-  ImageTransform.reset();
+  ImageControl.reset();
 }
 
 function goHome() {
@@ -121,7 +121,7 @@ function toggleAnimation() {
   if (!isImageDisplayed) return;
 
   isAnimating = true;
-  animationDuration = cycle(animationDuration);
+  animationDuration = cycle(animationDuration - 0.2, 0, 1);
 
   toggleJitter(true, { x: 2, y: 5 });
   imageBoard.style.animation = animationDuration > 0 ? `bounce ${animationDuration}s ease-in-out infinite` : null;
@@ -211,7 +211,7 @@ function removeStickers() {
   panzooms.length = 1;
 }
 
-const ImageTransform = (() => {
+const ImageControl = (() => {
   function rotate(direction = 1, value = 3) {
     const current = parseFloat(activeImageEl.firstElementChild.style.rotate) || 0;
     const total = current + (direction > 0 ? value : -value);
@@ -238,13 +238,25 @@ const ImageTransform = (() => {
     }
   }
 
+  function toggleBrightness() {
+    // Read current brightness from the element's style, default to 1.0 (normal)
+    const currentFilter = activeImageEl.style.filter;
+    const match = currentFilter.match(/brightness\(([\d.]+)\)/);
+    let currentBrightness = match ? parseFloat(match[1]) : 1.0;
+    // Increment by the step and wrap around the min/max range
+    let nextBrightness = cycle(currentBrightness + 0.2, 0.6, 1.6);
+    // Apply the new brightness filter
+    activeImageEl.style.filter = `brightness(${nextBrightness})`;
+  }
+
   function reset() {
     activeImageEl.firstElementChild.style.transform = null;
     activeImageEl.firstElementChild.style.rotate = null;
     activeImageEl.firstElementChild.style.scale = null;
+    activeImageEl.style.filter = null;
   }
 
-  return { rotate, scale, flip, reset };
+  return { rotate, scale, flip, toggleBrightness, reset };
 })();
 
 viewport.addEventListener("click", async () => {

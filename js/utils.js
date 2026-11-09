@@ -194,11 +194,6 @@ function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 
-function wrap(value, min, max) {
-  const range = max - min + 1;
-  return ((((value - min) % range) + range) % range) + min;
-}
-
 function changeScreen(screenName) {
   document.querySelectorAll(".screen").forEach((element) => {
     element.classList.add("hidden");
@@ -215,15 +210,12 @@ function setImageSrc(imageEl, src) {
   });
 }
 
-function cycle(value, max = 0.8, min = 0, step = 0.2) {
-  value = Math.round((value - step) * 10) / 10;
+function cycle(value, min, max) {
+  const range = max - min;
 
-  // Wrap around back to max if it drops below min
-  if (value < min) {
-    value = max;
-  }
+  const cycled = ((((value - min) % range) + range) % range) + min;
 
-  return value;
+  return Number(cycled.toFixed(1));
 }
 
 function nextFrame() {
@@ -234,5 +226,5 @@ function createElement(htmlText) {
   const parser = new DOMParser();
   const doc = parser.parseFromString(htmlText, "text/html");
   const element = doc.body.firstChild; // Extracts the parsed element
-  return element
+  return element;
 }
